@@ -1,1 +1,9 @@
 .DS_Store
+wasm/target
+**/*.rs.bk
+Cargo.lock
+bin/
+pkg/
+wasm-pack.log
+Dist/
+node_modules/
