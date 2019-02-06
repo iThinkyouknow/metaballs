@@ -21,7 +21,7 @@
     <p>Max FPS: <span id="max-fps"></span></p>
     <p>Min FPS: <span id="min-fps"></span></p>
     <p>Avg FPS: <span id="avg-fps"></span></p>
-    <canvas id="canvas" width="1280" height="720"></canvas>
+    <canvas id="canvas"></canvas>
     <script>
         let [maxFPSEl, minFPSEl, avgFPSEl] = [
             'max-fps',
@@ -68,6 +68,8 @@
         const points = [];
         const baseVelocity = 1
 
+        canvas.width = width;
+        canvas.height = height;
         tempCanvas.width = width;
         tempCanvas.height = height;
 
