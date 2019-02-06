@@ -17,8 +17,39 @@
 </head>
 
 <body>
+    <p id="width-height"></p>
+    <p>Max FPS: <span id="max-fps"></span></p>
+    <p>Min FPS: <span id="min-fps"></span></p>
+    <p>Avg FPS: <span id="avg-fps"></span></p>
     <canvas id="canvas" width="1280" height="720"></canvas>
     <script>
+        let [maxFPSEl, minFPSEl, avgFPSEl] = [
+            'max-fps',
+            'min-fps',
+            'avg-fps'
+        ].map(id => document.getElementById(id));
+
+        let minFPS = Infinity;
+        let maxFPS = 0;
+        let avgFPSArray = Array.from({ length: 100 }, () => 0);
+        const getTotalFPS = (totalFPS, currentFPS) => totalFPS + currentFPS;
+        const getFPS = (t0, t1) => 1000 / ((t1 - t0))
+
+        const updateFPS_impure = (fps) => {
+            maxFPS = Math.max(maxFPS, fps);
+            minFPS = Math.min(minFPS, fps);
+            avgFPSArray.shift()
+            avgFPSArray.push(fps)
+            avgFPS = avgFPSArray.reduce(getTotalFPS, 0) * 0.01;
+
+            [
+                [maxFPSEl, maxFPS],
+                [minFPSEl, minFPS],
+                [avgFPSEl, avgFPS],
+            ].forEach(([elem, fps]) => elem.textContent = fps)
+        }
+
+
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         ctx.webkitImageSmoothingEnabled = true;
@@ -29,8 +60,8 @@
         //constants
         const numOfBalls = 75;
         const ballBaseSize = 50;
-        const width = 1280;
-        const height = 720
+        const width = 2560;
+        const height = 1440;
         const threshold = 210;
         const colors = { r: 255, g: 0, b: 0 }
         const cycle = 0;
@@ -39,6 +70,8 @@
 
         tempCanvas.width = width;
         tempCanvas.height = height;
+
+        document.getElementById('width-height').textContent = `Width, height of Canvas in px: ${width}, ${height}`;
 
         // generate balls
         const ballsPoint = Array.from({ length: numOfBalls }, () => ({
@@ -50,6 +83,7 @@
         }));
 
         const update = () => {
+            const t0 = performance.now();
             tempCtx.clearRect(0, 0, width, height);
             ballsPoint
                 .forEach((ballPoint) => {
@@ -78,11 +112,13 @@
                     tempCtx.lineWidth = 2;
                 });
 
-            metabalize();
-            requestAnimationFrame(update)
+            metabalize(t0);
+
+            requestAnimationFrame(update);
+
         };
 
-        const metabalize = () => {
+        const metabalize = (t0) => {
             let imageData = tempCtx.getImageData(0, 0, width, height);
             let pix = imageData.data;
             // rgba, hence i + 4 to the next red
@@ -96,8 +132,10 @@
                     pix[i + 3] = currentPixAlpha;
                 }
             }
-            
+
             ctx.putImageData(imageData, 0, 0);
+            const fps = getFPS(t0, performance.now());
+            updateFPS_impure(fps);
         };
 
         update();
